@@ -50,6 +50,12 @@ missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                 <AgentHandlers>
                   <ObservationFromFullStats/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
+                  <RewardForTouchingBlockType>
+                    <Block reward="100.0" type="lapis_block" behaviour="onceOnly"/>
+                  </RewardForTouchingBlockType>
+                  <AgentQuitFromTouchingBlockType>
+                      <Block type="lapis_block" />
+                  </AgentQuitFromTouchingBlockType>
                 </AgentHandlers>
               </AgentSection>
             </Mission>'''
@@ -72,7 +78,17 @@ my_mission = MalmoPython.MissionSpec(missionXML, True)
 my_mission_record = MalmoPython.MissionRecordSpec()
 my_mission.forceWorldReset()
 
-e = maze_gen2.maze_gen((0,0), DEFAULT_SIZE, DEFAULT_SIZE)
+size = (DEFAULT_SIZE, DEFAULT_SIZE)
+if len(sys.argv) == 1:
+    pass
+elif len(sys.argv) == 2:
+    size = ( int(sys.argv[1]), int(sys.argv[1]) )
+elif len(sys.argv) == 3:
+    size = ( int(sys.argv[1]), int(sys.argv[2]) )
+else:
+    print "Usage:", sys.argv[0], "[rowsize [colsize]]"
+
+e = maze_gen2.maze_gen((0,0), size[0], size[1])
 def make_edge(edge):
     edgediff = (edge[1][0] - edge[0][0], edge[1][1] - edge[0][1])
     start = (edge[0][0]*2, edge[0][1]*2)
@@ -83,7 +99,9 @@ def make_edge(edge):
         my_mission.drawBlock(ed[0], 1, ed[1], "stone")
 for i in e:
     make_edge(i)
-    
+
+final_coords = ( (size[0]-1)*2, (size[1]-1)*2 )
+my_mission.drawBlock(final_coords[0], 1, final_coords[1], "lapis_block")
 
 # Attempt to start a mission:
 max_retries = 3
