@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <About>
+    <Summary>Hello world!</Summary>
+  </About>
+  
+  <ServerSection>
+      <ServerInitialConditions>
+        <Time>
+            <StartTime>1</StartTime>
+        </Time>
+        <Weather>clear</Weather>
+      </ServerInitialConditions>
+      <ServerHandlers>
+          <FlatWorldGenerator generatorString="3;2*11;8;"/>
+          <ServerQuitFromTimeUp timeLimitMs="30000"/>
+          <ServerQuitWhenAnyAgentFinishes/>
+        </ServerHandlers>
+  </ServerSection>
+  
+  <AgentSection mode="Survival">
+    <Name>MalmoTutorialBot</Name>
+    <AgentStart>
+        <Placement x="0.5" y="5.0" z="0.5" yaw="-90"/>
+        <Inventory>
+            <InventoryItem slot="0" type="diamond_pickaxe"/>
+        </Inventory>
+    </AgentStart>
+    <AgentHandlers>
+      <DiscreteMovementCommands/>
+      <ObservationFromFullStats/>
+      <ObservationFromGrid>
+        <Grid name="floor3x3">
+            <min x="-1" y="-1" z="-1"/>
+            <max x="1" y="-1" z="1"/>
+        </Grid>
+      </ObservationFromGrid>
+      <RewardForTouchingBlockType>
+        <Block reward="1000000000.0" type="lapis_block" behaviour="onceOnly"/>
+        <Block reward="-100.0" type="lava" behaviour="onceOnly"/>
+      </RewardForTouchingBlockType>
+      <RewardForSendingCommand reward="-1"/>
+      <AgentQuitFromTouchingBlockType>
+          <Block type="lapis_block" />
+          <Block type="lava" />
+      </AgentQuitFromTouchingBlockType>
+    </AgentHandlers>
+  </AgentSection>
+</Mission>

@@ -13,51 +13,57 @@ DEFAULT_SIZE = 3
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)  # flush print output immediately
 
-missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-            <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            
-              <About>
-                <Summary>Hello world!</Summary>
-              </About>
-              
-            <ServerSection>
-              <ServerInitialConditions>
-                <Time>
-                    <StartTime>12000</StartTime>
-                    <AllowPassageOfTime>false</AllowPassageOfTime>
-                </Time>
-                <Weather>clear</Weather>
-              </ServerInitialConditions>
-              <ServerHandlers>
-                  <FlatWorldGenerator generatorString="3;2*11;8;"/>
-                  <ServerQuitFromTimeUp timeLimitMs="30000"/>
-                  <ServerQuitWhenAnyAgentFinishes/>
-                </ServerHandlers>
-              </ServerSection>
-              
-              <AgentSection mode="Survival">
-                <Name>MalmoTutorialBot</Name>
-                <AgentStart>
-                    <Placement x="0.5" y="5.0" z="0.5" yaw="-90"/>
-                    <Inventory>
-                        <InventoryItem slot="0" type="diamond_pickaxe"/>
-                    </Inventory>
-                </AgentStart>
-                <AgentHandlers>
-                  <DiscreteMovementCommands/>
-                  <ObservationFromFullStats/>
-                  <RewardForTouchingBlockType>
-                    <Block reward="1000000000.0" type="lapis_block" behaviour="onceOnly"/>
-                    <Block reward="-100.0" type="lava" behaviour="onceOnly"/>
-                  </RewardForTouchingBlockType>
-                  <RewardForSendingCommand reward="-1"/>
-                  <AgentQuitFromTouchingBlockType>
-                      <Block type="lapis_block" />
-                      <Block type="lava" />
-                  </AgentQuitFromTouchingBlockType>
-                </AgentHandlers>
-              </AgentSection>
-            </Mission>'''
+#missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+#            <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+#            
+#              <About>
+#                <Summary>Hello world!</Summary>
+#              </About>
+#              
+#            <ServerSection>
+#              <ServerInitialConditions>
+#                <Time>
+#                    <StartTime>12000</StartTime>
+#                    <AllowPassageOfTime>false</AllowPassageOfTime>
+#                </Time>
+#                <Weather>clear</Weather>
+#              </ServerInitialConditions>
+#              <ServerHandlers>
+#                  <FlatWorldGenerator generatorString="3;2*11;8;"/>
+#                  <ServerQuitFromTimeUp timeLimitMs="30000"/>
+#                  <ServerQuitWhenAnyAgentFinishes/>
+#                </ServerHandlers>
+#              </ServerSection>
+#              
+#              <AgentSection mode="Survival">
+#                <Name>MalmoTutorialBot</Name>
+#                <AgentStart>
+#                    <Placement x="0.5" y="5.0" z="0.5" yaw="-90"/>
+#                    <Inventory>
+#                        <InventoryItem slot="0" type="diamond_pickaxe"/>
+#                    </Inventory>
+#                </AgentStart>
+#                <AgentHandlers>
+#                  <DiscreteMovementCommands/>
+#                  <ObservationFromFullStats/>
+#                  <ObservationFromGrid>
+#                    <Grid name="floor3x3">
+#                        <min x="-1" y="-1" z="-1"/>
+#                        <max x="1" y="-1" z="1"/>
+#                    </Grid>
+#                  </ObservationFromGrid>
+#                  <RewardForTouchingBlockType>
+#                    <Block reward="1000000000.0" type="lapis_block" behaviour="onceOnly"/>
+#                    <Block reward="-100.0" type="lava" behaviour="onceOnly"/>
+#                  </RewardForTouchingBlockType>
+#                  <RewardForSendingCommand reward="-1"/>
+#                  <AgentQuitFromTouchingBlockType>
+#                      <Block type="lapis_block" />
+#                      <Block type="lava" />
+#                  </AgentQuitFromTouchingBlockType>
+#                </AgentHandlers>
+#              </AgentSection>
+#            </Mission>'''
 
 # Create default Malmo objects:
 
@@ -72,10 +78,14 @@ if agent_host.receivedArgument("help"):
     print agent_host.getUsage()
     exit(0)
 
+mission_file = "sarsaattempt1.xml"
+with open(mission_file, 'r') as f:
+    print "Loading mission from %s" % mission_file
+    missionXML = f.read()
+    my_mission = MalmoPython.MissionSpec(missionXML, True)
 
 my_mission = MalmoPython.MissionSpec(missionXML, True)
 my_mission_record = MalmoPython.MissionRecordSpec()
-my_mission.forceWorldReset()
 
 size = (DEFAULT_SIZE, DEFAULT_SIZE)
 if len(sys.argv) == 1:
@@ -104,6 +114,10 @@ for i in e:
 final_coords = ( (size[0]-1)*2, (size[1]-1)*2 )
 my_mission.drawBlock(final_coords[0], 3, final_coords[1], "lapis_block")
 
+my_mission2 = MalmoPython.MissionSpec(my_mission.getAsXML(False), True)
+my_mission_record2 = MalmoPython.MissionRecordSpec()
+my_mission.forceWorldReset()
+
 actions = ["movenorth 1", "movesouth 1", "movewest 1", "moveeast 1"]
 def init_q_state(q_table, state, actions=actions):
     for a in actions:
@@ -111,8 +125,6 @@ def init_q_state(q_table, state, actions=actions):
 
 q_table = defaultdict(dict)
 init_q_state(q_table, (0,0))
-q_table[(0,0)]["movesouth 1"] = 9
-q_table[(0,0)]["moveeast 1"] = 9
 
 num_visited = defaultdict(int)
 
@@ -124,7 +136,7 @@ def eps_greedy(actions, epsilon=0.1):
     else:
         return max(actions, key=lambda x: x[1])[0]
 
-def update_q_table(q_table, s, a, r, snew, anew, alpha=0.1, gamma=0.95):
+def update_q_table(q_table, s, a, r, snew, anew, alpha=0.1, gamma=0.5):
     q_table[s][a] += alpha*(r + gamma*q_table[snew][anew] - q_table[s][a])
 
 # Attempt to start a mission:
@@ -138,7 +150,10 @@ for i in range(num_repeats):
     max_retries = 1000
     for retry in range(max_retries):
         try:
-            agent_host.startMission( my_mission, my_mission_record )
+            if i == 0:
+                agent_host.startMission( my_mission, my_mission_record )
+            else:
+                agent_host.startMission( my_mission2, my_mission_record2 )
             break
         except RuntimeError as e:
             if retry == max_retries - 1:
@@ -163,8 +178,7 @@ for i in range(num_repeats):
     s = (0,0)
     num_visited[s] += 1
     a = eps_greedy(q_table[s].items(), 1/num_visited[s])
-    #for ok in q_table.items():
-        #print str(ok[0]) + ":", ok[1]
+    print(q_table[s])
 
     # Loop until mission ends:
     time.sleep(0.5)
@@ -177,7 +191,12 @@ for i in range(num_repeats):
         for error in world_state.errors:
             print "Error:",error.text
 
-        time.sleep(0.5)
+        obs_text = []
+        while len(obs_text) > 0:
+            obs_text = world_state.observations[-1].text
+            world_state = agent_host.getWorldState()
+
+        time.sleep(0.1)
         agent_host.sendCommand(a)
         num_steps += 1
 
@@ -202,13 +221,13 @@ for i in range(num_repeats):
             r += reward.getValue()
 
         obs = json.loads(obs_text)
-        snew = (obs["XPos"], obs["ZPos"])
+        snew = (obs["ZPos"], obs["XPos"])
         if snew not in q_table:
             init_q_state(q_table, snew)
         
         dist = (abs(snew[0] - 0), abs(snew[1] - 0))
         dist = dist[0] + dist[1]
-        r = r/(dist**2)
+        r = r/(dist**4)
         
         num_visited[snew] += 1
         anew = eps_greedy(q_table[snew].items(), 1/num_visited[snew])
