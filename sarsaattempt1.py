@@ -166,6 +166,15 @@ def eps_greedy(actions, epsilon=0.1):
 def update_q_table(q_table, s, a, r, snew, anew, alpha=0.3, gamma=0.9):
     q_table[s][a] += alpha*(r + gamma*q_table[snew][anew] - q_table[s][a])
 
+def get_state_from_world(world_state):
+    try:
+        obs = json.loads(world_state.observations[-1].text)
+    except:
+        return (None, None)
+    xpos = obs["XPos"]
+    zpos = obs["ZPos"]
+    return (xpos, zpos)
+
 # Attempt to start a mission:
 num_repeats = 10000 #(number of episodes)
 for i in range(num_repeats):
@@ -175,7 +184,7 @@ for i in range(num_repeats):
     my_mission_record = MalmoPython.MissionRecordSpec()
 
     #Attempt to start the mission
-    max_retries = 1000
+    max_retries = 20
     for retry in range(max_retries):
         try:
             if i == 0:
@@ -184,11 +193,7 @@ for i in range(num_repeats):
                 agent_host.startMission( my_mission2, my_mission_record2 )
             break
         except RuntimeError as e:
-            if retry == max_retries - 1:
-                print "Error starting mission:",e
-                exit(1)
-            else:
-                time.sleep(2)
+            print "Error starting mission:",e
 
     # Loop until mission starts:
     print "Waiting for the mission to start ",
@@ -203,22 +208,29 @@ for i in range(num_repeats):
     print
     print "Mission running ",
 
-    #our start state is (0.5,0.5) by default 
-    s = (0.5,0.5)
-    num_visited[s] += 1 #We have visited this state once
 
-    #choose action from start state with epsilon greedy policy w/
-    #epsilon = 1/number of times this state has been visited
-    a = eps_greedy(q_table[s].items(), 1/num_visited[s])
 
     #print start state's q table at the beginning of each episode
     #for debugging purposes
-    print(q_table[s])
 
     # Loop until mission ends:
     time.sleep(0.5)
     num_steps = 0
+
     world_state = agent_host.getWorldState()
+    xpos, zpos = get_state_from_world(world_state)
+    
+    s = (xpos,zpos)
+    num_visited[s] += 1 #We have visited this state once
+
+    #choose action from start state with epsilon greedy policy w/
+    #epsilon = 1/number of times this state has been visited
+    if s not in q_table:
+        init_q_state(q_table, s)
+    a = eps_greedy(q_table[s].items(), 1/(math.log(num_visited[s]+2)))
+
+    print(q_table[s])
+
     while world_state.is_mission_running:
         sys.stdout.write(".")
         time.sleep(0.1)
@@ -226,42 +238,36 @@ for i in range(num_repeats):
         for error in world_state.errors:
             print "Error:",error.text
 
-        #Some stuff I had to do to make it work smoothly
-        obs_text = []
-        while len(obs_text) > 0:
-            obs_text = world_state.observations[-1].text
-            world_state = agent_host.getWorldState()
-
-        time.sleep(0.1)
-
         #Take an action
         agent_host.sendCommand(a)
         num_steps += 1
-
-        #Will explain later (needed to make it work smoothly)
-        obs_text = []
+        
         breakloop = False
-        count = 0
-        while len(obs_text) == 0:
+
+        while True:
+            time.sleep(0.1)
             world_state = agent_host.getWorldState()
-            try:
-                obs_text = world_state.observations[-1].text
-            except:
-                pass
-            if len(obs_text) == 0 and world_state.is_mission_running == False:
+            newxpos, newzpos = get_state_from_world(world_state)
+            if newxpos == None or newzpos == None:
                 breakloop = True
                 break
-        if breakloop:
-            break
+            if newxpos != xpos or newzpos != zpos:
+                xpos = newxpos
+                zpos = newzpos
+                break
+            print "Stuck"
 
-        #get the reward for this action
         r = 0
-        for reward in world_state.rewards:
-            r += reward.getValue()
-
+        if len(world_state.rewards) > 0:
+            r += world_state.rewards[-1].getValue()
+        else:
+            break
         
-        obs = json.loads(obs_text)
-        snew = (obs["XPos"], obs["ZPos"])
+        snew = (xpos, zpos)
+
+        print snew,r
+        print
+
         #If we've never seen this state before,
         #add it to the Q table and initialize it
         if snew not in q_table:
@@ -275,7 +281,7 @@ for i in range(num_repeats):
         #which discounts by time)
         #So if the agent dies further away from the goal, it gets less
         #negative reward
-        r = r/(dist**2)
+        r = r/(dist+1)
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/log(number of times we visited the state)
@@ -285,7 +291,11 @@ for i in range(num_repeats):
         
         s = snew
         a = anew
-        
+
+        if breakloop:
+            time.sleep(0.1)
+            break
+
 
     time.sleep(0.5)
     #if 
