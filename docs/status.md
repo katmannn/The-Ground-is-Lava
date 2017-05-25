@@ -7,6 +7,8 @@ title: Proposal
 
 (Video is only of run due to time constraint).
 
-Layout of maze in the video.
+Layout of specific maze in the video.
 
 <img src="http://i.imgur.com/ZlDZljQ.png">
+
+Mazes are randomly generated for each run using the Prim-Dijkstra algorithm.
