@@ -9,4 +9,4 @@ title: Proposal
 
 Layout of maze in the video.
 
-<img src="http://i.imgur.com/vFC0obc.png">
+<img src="http://i.imgur.com/ZlDZljQ.png">
