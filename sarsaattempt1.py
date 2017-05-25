@@ -16,7 +16,6 @@ DEFAULT_SIZE = 4
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)  # flush print output immediately
 
-
 # Create default Malmo objects:
 
 agent_host = MalmoPython.AgentHost()
@@ -111,14 +110,6 @@ def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
         r = random.randint(0, 3)
         return actions[r][0]
     else:
-#        if grid == None or nn == None or s == None:
-#            print "Hi???"
-#            return max(actions, key=lambda x: x[1])[0]
-#        else:
-#            print "ok"
-#            return max(actions, key=lambda x: x[1]/10 + \
-#                nn.predict( make_nn_data(s, grid, x[0]) ))[0]
-#            return max(actions, key=lambda x: x[1])[0]
          return max(actions, key=lambda x: x[1])[0]
 
 #Updating a Q table w/ the sarsa update
@@ -134,6 +125,7 @@ def get_state_from_world(world_state):
     zpos = obs["ZPos"]
     return (xpos, zpos)
 
+#Not used yet but will be useful in the future
 def get_grid_from_world(world_state):
     try:
         obs = json.loads(world_state.observations[-1].text)
@@ -144,15 +136,6 @@ def get_grid_from_world(world_state):
     for i in arr:
         newarr.append(hash(i)/float(10**18))
     return newarr
-
-def make_nn_data(s, s_grid, a):
-    return np.array( [s[0], s[1]] + s_grid + [hash(a)/float(10**18)] ).reshape(1, -1)
-
-def update_nn(nn, s, s_grid, a, r):
-    nn.fit( make_nn_data(s, s_grid, a), np.array([r]) )
-    
-
-nn = MLPRegressor(hidden_layer_sizes=(20,30,20), learning_rate_init=0.2)
 
 # Attempt to start a mission:
 num_repeats = 10000 #(number of episodes)
@@ -186,21 +169,21 @@ for i in range(num_repeats):
 
     print
     print "Mission running ",
-
     
     time.sleep(0.5)
+
+    #Get current state
     world_state = agent_host.getWorldState()
     xpos, zpos = get_state_from_world(world_state)
-    grid = get_grid_from_world(world_state)
     s = (xpos,zpos)
-    num_visited[s] += 1 #We have visited this state once
+
+    num_visited[s] += 1 #We have visited this state
+
     #choose action from start state with epsilon greedy policy w/
     #epsilon = 1/number of times this state has been visited
     if s not in q_table:
         init_q_state(q_table, s)
-    a = eps_greedy(q_table[s].items(), 1/math.log(num_visited[s]+2), grid, nn, s)
-    print(q_table[s])
-    print(1/math.log(num_visited[s]+2))
+    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2))
 
     while world_state.is_mission_running:
         sys.stdout.write(".")
@@ -213,35 +196,38 @@ for i in range(num_repeats):
         agent_host.sendCommand(a)
         
         breakloop = False
-
         while True:
             time.sleep(0.1)
             world_state = agent_host.getWorldState()
             newxpos, newzpos = get_state_from_world(world_state)
-            newgrid = get_grid_from_world(world_state)
+
+            #If something went wrong while trying to get the
+            #world_state (i.e. mission ended and there's nothing
+            #to get), we will restart the mission following this
+            #iteration.
             if newxpos == None or newzpos == None:
                 breakloop = True
                 break
+
+            #Checking to see if the world_state represents the
+            #"new state" (i.e. we actually changed position. The
+            #world_state obtained might actually not be the current
+            #one yet)
             if newxpos != xpos or newzpos != zpos:
                 xpos = newxpos
                 zpos = newzpos
                 break
 
-        if newgrid == None:
-            print "Uh oh"
-
+        #Get reward for this state
         r = 0
         if len(world_state.rewards) > 0:
             r += world_state.rewards[-1].getValue()
-        else:
-            print "WTF"
+        else: #If we got no reward, something went wrong. Restart mission
             break
 
+        #If everything went well, get the new state
         snew = (xpos, zpos)
-        num_visited[snew]+=1
-
-        print snew,r
-        print
+        num_visited[snew]+=1 #increment number of times visited
 
         #If we've never seen this state before,
         #add it to the Q table and initialize it
@@ -257,26 +243,23 @@ for i in range(num_repeats):
         #So if the agent dies further away from the goal, it gets less
         #negative reward
         r = r/(dist+1)
-        update_nn(nn, s, grid, a, r)
         
         #choose new action according to epsilon greedy policy with
-        #epsilon = 1/log(number of times we visited the state)
-        #anew = eps_greedy(q_table[snew].items(), 1/(math.log(num_visited[snew]+2)), grid, nn)
-
+        #epsilon = 1/(number of times we visited the state)
         anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2), grid, nn, s)
         update_q_table(q_table, s, a, r, snew, anew) #sarsa update to q table
         
+        #Update current state/action to be taken
         s = snew
         a = anew
-        grid = newgrid
 
+        #This usually means the agent died
         if breakloop:
             time.sleep(0.1)
             break
 
 
     time.sleep(0.5)
-    #if 
     print
     print "Mission ended"
 # Mission has ended.
