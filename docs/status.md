@@ -5,8 +5,8 @@ title: Proposal
 ## Video of Full Run
 <iframe width="560" height="315" src="https://www.youtube.com/embed/fx8xDqEMQd0" frameborder="0" allowfullscreen></iframe>
 
-Layout of maze in video.
+(Video is only of run due to time constraint).
 
-<img src="http://i.imgur.com/0YQl20L.png">
+Layout of maze in the video.
 
-Red square is starting square and green square is the target square.
+<img src="http://i.imgur.com/vFC0obc.png">
