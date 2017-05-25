@@ -9,8 +9,8 @@ import math
 
 import maze_gen2
 from collections import defaultdict
-import numpy as np
-from sklearn.neural_network import MLPRegressor
+#import numpy as np
+#from sklearn.neural_network import MLPRegressor
 
 DEFAULT_SIZE = 4
 
@@ -246,7 +246,7 @@ for i in range(num_repeats):
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/(number of times we visited the state)
-        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2), grid, nn, s)
+        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2))
         update_q_table(q_table, s, a, r, snew, anew) #sarsa update to q table
         
         #Update current state/action to be taken
