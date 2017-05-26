@@ -6,7 +6,7 @@ title: Status
 We are creating an agent that learns to solve mazes.
 
 ## Approach
-Most of the code is in "sarsaattempt1.py." Our main algorithm is the Sarsa algorithm, which is described in Figure 6.9 on p. 146 of the book. The MDP is simple; it's basically a gridworld. Every state is a position on the grid of the maze and there are 4 possible actions from each state allowing it to move one block north, west, east, or south. In other words, the states are in the form "(int, int)" and the actions are in the form "move____ 1." (Actually, the states are (int+0.5, int+0.5), but that's just a techical detail). 
+Most of the code is in "sarsaattempt1.py." Our main algorithm is the Sarsa algorithm, which is described in Figure 6.9 on p. 146 of the book. The MDP is simple; it's basically a gridworld. Every state is a position on the grid of the maze and there are 4 possible actions from each state allowing it to move one block north, west, east, or south. In other words, the states are in the form "(int, int)" and the actions are in the form "move____ 1." (Actually, the states are (int+0.5, int+0.5), but that's just a techical detail). Thus, as in tutorial_6.py, the agent is "blind" (it doesn't have any field of vision and it doesn't even know that there is a goal state). However, the mazes that this agent can solve are more complicated than that (namely, we tested our agent on randomly generated mazes using the Prim-Jarnik MST algorithm, which is known to produce difficult mazes).
 
 We maintain a table of Q values for each visited state (adding new states to the table as we discover them) and use the sarsa algorithm to update the Q values at every time step:
 
@@ -24,6 +24,7 @@ Finally: The agent occasionally "cheats" in that if there's a single gap between
 8x8 maze: ~350 episodes
 10x10 maze: ~600 episodes
 (maybe someone can do it on 2x2, 4x4, 6x6, 12x12, etc. and make a chart?)
+Could also compare it to the Q-learning in tutorial_6.py
 A small technical detail is that there are some jerky episode restarts occurring in the middle of the maze (These are the random "pauses" the agent takes in the video). This doesn't have any real effect on the algorithm other than overestimating the episodes and causing it to move slightly slower, but it would be nice to have it go smoother.
 
 ## Remaining Goals and Challenges
