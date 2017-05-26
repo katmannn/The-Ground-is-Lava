@@ -3,7 +3,7 @@ layout: default
 title: Status
 ---
 ## Project Summary
-We are creating an agent that learns to solve mazes.
+We are creating an agent that learns to solve mazes. 
 
 ## Approach
 Most of the code is in "sarsaattempt1.py." Our main algorithm is the Sarsa algorithm, which is described in Figure 6.9 on p. 146 of the book. The MDP is simple; it's basically a gridworld. Every state is a position on the grid of the maze and there are 4 possible actions from each state allowing it to move one block north, west, east, or south. In other words, the states are in the form "(int, int)" and the actions are in the form "move____ 1." (Actually, the states are (int+0.5, int+0.5), but that's just a techical detail). Thus, as in tutorial_6.py, the agent is "blind" (it doesn't have any field of vision and it doesn't even know that there is a goal state). However, the mazes that this agent can solve are more complicated than that (namely, we tested our agent on randomly generated mazes using the Prim-Jarnik MST algorithm, which is known to produce difficult mazes).
@@ -18,17 +18,17 @@ We use an epsilon greedy policy to choose actions (with probability epsilon, pic
 
 On the maze generation: We implemented the a randomized Prim-Jarnik minimum spanning tree algorithm, as described here: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_Prim.27s_algorithm (The "Modified version"). The implementation is in "maze_gen2.py." This is known to generate fairly difficult mazes.
 
-Finally: The agent occasionally "cheats" in that if there's a single gap between it and the goal block, it will just go into the gap and scrape the goal block before falling into the lava, reaping the reward before death, as doing so technically counts as "touching" the goal by malmo. Not sure if this is a feature or a bug.
 
 ## Evaluation
-8x8 maze: ~350 episodes
-10x10 maze: ~600 episodes
-(maybe someone can do it on 2x2, 4x4, 6x6, 12x12, etc. and make a chart?)
-Could also compare it to the Q-learning in tutorial_6.py
+Our agent solves 8x8 mazes in about 350 episodes (The video shows an 8x8 maze) and a 10x10 maze in about 600 episodes [MAKE A CHART/GRAPH? TRY FOR 2X2, 4X4, 6X6, 12X12, ETC?].
+We definitely completed our baseline (solving modestly small randomly generated mazes). Our agent is at a significant disadvantage compared to something like Dijkstra's algorithm or a human player, as it is blind. But it certainly does better than a random agent (one that just pics actions uniformly), which cannot solve these mazes in a feasible amount of time (let alone find the goal state over and over).
+
 A small technical detail is that there are some jerky episode restarts occurring in the middle of the maze (These are the random "pauses" the agent takes in the video). This doesn't have any real effect on the algorithm other than overestimating the episodes and causing it to move slightly slower, but it would be nice to have it go smoother.
 
+Finally: The agent occasionally "cheats" in that if there's a single gap between it and the goal block, it will just go into the gap and scrape the goal block before falling into the lava, reaping the reward before death, as doing so technically counts as "touching" the goal by malmo. Not sure if this is a feature or a bug.
+
 ## Remaining Goals and Challenges
-We want to perform a sufficient evaluation of our algorithm. We know that it is practically impossible for a randomized agent to solve the mazes of the size ours can solve in any reasonable time (as we've inadvertently tried such a thing with a buggy agent), but the only metric here is whether it works or not. We want to perhaps test our original goal of giving the agent some percepts beyond its raw position (like a field of vision). Actually, if you look at the commit history, an earlier version was using an MLPRegressor from scikit-learn to rate states by a 3x3 grid array from malmo, which is an attempt to do exactly that, but we temporarily removed it upon this progress report for the sake of simplicity. We might want to rollback to that version of the file and see whether it works better than the raw, blind Sarsa we're currently using. Some sort of helper heuristic function like this could help reduce the number of episodes it takes to converge (basically something better than the "Manhattan distance" discounting we're currently using). We also haven't really tried it on larger mazes yet. 
+We want to perform a sufficient evaluation of our algorithm. It takes a long time for the agent to solve mazes, so we don't have too much data on the number of episodes it takes (we only did about 2-3 runs on 8x8 and 10x10 mazes, and each time they took about 350 and 600 episodes respectively, which is how we got the Evaluation numbers, but we can't be too sure about it). We also don't have much to compare our agent against. Human players and direct maze solving algorithms (like Dijkstra's) are too powerful in comparison to a blind agent, while a uniformly random agent is too weak. On that note, perhaps our main next step is to test our original goal of giving the agent some percepts beyond its raw position (like a field of vision). Actually, if you look at the commit history, an earlier version of sarsaattempt1.py was experimenting with an MLPRegressor from scikit-learn to rate states by a 3x3 grid array from malmo, which is an attempt to do exactly that, but we temporarily removed it upon this progress report for the sake of simplicity. We might want to rollback to that version of the file and see whether it works better than the raw, blind Sarsa we're currently using (we never really fully tested it). Some sort of helper heuristic function like this could help reduce the number of episodes it takes to converge (basically something better than the "Manhattan distance" discounting we're currently using). We also haven't really tried it on larger mazes yet. 
 
 ## Video of Full Run
 <iframe width="854" height="480" src="https://www.youtube.com/embed/fx8xDqEMQd0" frameborder="0" allowfullscreen></iframe>
