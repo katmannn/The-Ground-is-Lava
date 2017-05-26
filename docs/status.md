@@ -20,6 +20,14 @@ On the maze generation: We implemented the a randomized Prim-Jarnik minimum span
 
 Finally: The agent occasionally "cheats" in that if there's a single gap between it and the goal block, it will just go into the gap and scrape the goal block before falling into the lava, reaping the reward before death, as doing so technically counts as "touching" the goal by malmo. Not sure if this is a feature or a bug.
 
+## Evaluation
+8x8 maze: ~350 episodes
+10x10 maze: ~600 episodes
+(maybe someone can do it on 2x2, 4x4, 6x6, 12x12, etc. and make a chart?)
+
+## Remaining Goals and Challenges
+We want to perform a sufficient evaluation of our algorithm. We know that it is practically impossible for a randomized agent to solve the mazes of the size ours can solve in any reasonable time (as we've inadvertently tried such a thing with a buggy agent), but the only metric here is whether it works or not. We want to perhaps test our original goal of giving the agent some percepts beyond its raw position (like a field of vision). Actually, if you look at the commit history, an earlier version was using an MLPRegressor from scikit-learn to rate states by a 3x3 grid array from malmo, which is an attempt to do exactly that, but we temporarily removed it upon this progress report for the sake of simplicity. We might want to rollback to that version of the file and see whether it works better than the raw, blind Sarsa we're currently using. Some sort of heuristic function like this could help reduce the number of episodes it takes to converge. We also haven't really tried it on larger mazes yet.
+
 ## Video of Full Run
 <iframe width="854" height="480" src="https://www.youtube.com/embed/fx8xDqEMQd0" frameborder="0" allowfullscreen></iframe>
 
