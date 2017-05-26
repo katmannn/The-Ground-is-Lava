@@ -8,4 +8,4 @@ title:  Home
 
 <img src="http://i.imgur.com/VCT5B2n.png">
 
-Background links: https://en.wikipedia.org/wiki/Q-learning
+Background links: <a href="https://en.wikipedia.org/wiki/Q-learning" https://en.wikipedia.org/wiki/Q-learning </a>
