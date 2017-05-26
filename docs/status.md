@@ -20,7 +20,12 @@ On the maze generation: We implemented the a randomized Prim-Jarnik minimum span
 
 
 ## Evaluation
-Our agent solves 3x3 mazes in about 50 episodes, 5x5 mazes in about 200 episodes, 7x7 mazes in about 350 episodes (The video shows a 7x7 maze) and a 9x9 maze in about 600 episodes. When we say "solve the maze" we mean that it finds the goal state 3 times in a row (at that point, it is safe to assume that it more or less finds the goal state at every episode).
+
+DATA
+
+11x11: 856
+
+Our agent solves 3x3 mazes in about 50 episodes, 5x5 mazes in about 200 episodes, 7x7 mazes in about 350 episodes (The video shows a 7x7 maze) and a 9x9 maze in about 600 episodes. When we say "solve the maze" we mean that it finds the goal state 3 times in a row (at that point, it is safe to assume that it more or less finds the goal state at every episode, though for larger mazes it takes slightly longer for the Q values near the goal to "propogate" back down the path).
 
 We definitely completed our baseline (solving modestly small randomly generated mazes). Our agent is at a significant disadvantage compared to something like Dijkstra's algorithm or a human player, as it is blind. But it certainly does better than a random agent (one that just pics actions uniformly), which cannot solve these mazes in a feasible amount of time (let alone find the goal state over and over).
 
