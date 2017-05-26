@@ -20,10 +20,11 @@ On the maze generation: We implemented the a randomized Prim-Jarnik minimum span
 
 
 ## Evaluation
-Our agent solves 8x8 mazes in about 350 episodes (The video shows an 8x8 maze) and a 10x10 maze in about 600 episodes [MAKE A CHART/GRAPH? TRY FOR 2X2, 4X4, 6X6, 12X12, ETC?].
+Our agent solves 8x8 mazes in about 350 episodes (The video shows an 8x8 maze) and a 10x10 maze in about 600 episodes. When we say "solve the maze" we mean that it finds the goal state 3 times in a row (at that point, it is safe to assume that it more or less finds the goal state at every episode). [MAKE A CHART/GRAPH? TRY FOR 2X2, 4X4, 6X6, 12X12, ETC?].
+
 We definitely completed our baseline (solving modestly small randomly generated mazes). Our agent is at a significant disadvantage compared to something like Dijkstra's algorithm or a human player, as it is blind. But it certainly does better than a random agent (one that just pics actions uniformly), which cannot solve these mazes in a feasible amount of time (let alone find the goal state over and over).
 
-A small technical detail is that there are some jerky episode restarts occurring in the middle of the maze (These are the random "pauses" the agent takes in the video). This doesn't have any real effect on the algorithm other than overestimating the episodes and causing it to move slightly slower, but it would be nice to have it go smoother.
+A small technical detail is that there are some jerky episode restarts occurring in the middle of the maze (These are the random "pauses" the agent takes in the video). This doesn't have any real effect on the algorithm other than overestimating the number of episodes it takes and causing it to move slightly slower, but it would be nice to have it go more smoothly.
 
 Finally: The agent occasionally "cheats" in that if there's a single gap between it and the goal block, it will just go into the gap and scrape the goal block before falling into the lava, reaping the reward before death, as doing so technically counts as "touching" the goal by malmo. Not sure if this is a feature or a bug.
 
