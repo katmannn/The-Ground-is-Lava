@@ -23,7 +23,7 @@ On the maze generation: We implemented the a randomized Prim-Jarnik minimum span
 
 ## Evaluation
 
-Our agent solves 3x3 mazes in about 50 episodes, 5x5 mazes in about 200 episodes, 7x7 mazes in about 350 episodes (The video shows a 7x7 maze), a 9x9 maze in about 600 episodes, and an 11x11 maze in about 900 episodes. When we say "solve the maze" we mean that it finds the goal state 3 times in a row (at that point, it is safe to assume that it more or less finds the goal state at every episode, though for larger mazes it takes slightly longer for the Q values near the goal to "propogate" back down the path). These estimates come from a couple of runs we did on each size, as depicted in the following graph:
+Our agent solves 3x3 mazes in about 50 episodes, 5x5 mazes in about 200 episodes, 7x7 mazes in about 350 episodes (The video shows a 7x7 maze), a 9x9 maze in about 600 episodes, and an 11x11 maze in about 900 episodes. When we say "solve the maze" we mean that it finds the goal state 3 times in a row (at that point, it is safe to assume that it more or less finds the goal state at every episode, though for larger mazes it takes slightly longer for the Q values near the goal to "propogate" back down the path). These estimates come from a few runs we did on each size, as depicted in the following graph:
 
 <img src="plot1.jpg">
 
