@@ -1,4 +1,3 @@
-
 import MalmoPython
 import os
 import sys
@@ -9,8 +8,6 @@ import math
 
 import maze_gen2
 from collections import defaultdict
-import numpy as np
-from sklearn.neural_network import MLPRegressor
 
 DEFAULT_SIZE = 4
 
@@ -96,17 +93,13 @@ def init_q_state(q_table, state, actions=actions):
 
 #Create a Q table and initialize the start state
 q_table = defaultdict(dict)
+e_table = defaultdict(dict)
 init_q_state(q_table, (0.5,0.5))
+init_q_state(e_table, (0.5,0.5))
 
 #Create a separate dict to keep track of the number of times we've
 #visited each state
 num_visited = defaultdict(int)
-
-nn = MLPRegressor(hidden_layer_sizes=(20,30), alpha=0.3)
-
-def make_nn_dat(grid, action):
-    print(action)
-    return np.array( grid + [hash(action)/float(10**18)] ).reshape(1, -1)
 
 #Given a list of action-value pairs, choose an action with an
 #epsilon-greedy policy
@@ -116,17 +109,19 @@ def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
         r = random.randint(0, 3)
         return actions[r][0]
     else:
-        if grid != None and nn != None and s != None:
-            return max(actions, key=lambda x: x[1])[0]
-        else:
-            return max( actions, key=lambda x: x[1] + 
-                nn.predict(make_nn_dat(grid, x[0])) )[0]
-            
+         return max(actions, key=lambda x: x[1])[0]
 
 #Updating a Q table w/ the sarsa update
-def update_q_table(q_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9):
-    q_table[s][a] += alpha*(r + gamma*q_table[snew][anew] - q_table[s][a])
+def update_q_table(q_table, e_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9, l=0.5):
 
+    delta = r + gamma*q_table[snew][anew] - q_table[s][a]
+    e_table[s][a] = e_table[s][a] + 1
+    for state in q_table:
+        for action in actions:
+            q_table[s][a] = q_table[s][a] + alpha*delta*e_table[s][a]
+            e_table[s][a] = gamma*l*e_table[s][a]
+
+#Get position of agent as a tuple
 def get_state_from_world(world_state):
     try:
         obs = json.loads(world_state.observations[-1].text)
@@ -135,19 +130,6 @@ def get_state_from_world(world_state):
     xpos = obs["XPos"]
     zpos = obs["ZPos"]
     return (xpos, zpos)
-
-#Not used yet but will be useful in the future
-def get_grid_from_world(world_state):
-    try:
-        obs = json.loads(world_state.observations[-1].text)
-    except:
-        return [None]
-    newarr = []
-    arr = obs[u'floor3x3']
-    for i in arr:
-        newarr.append(hash(i)/float(10**18))
-    return newarr
-
 
 # Attempt to start a mission:
 num_repeats = 10000 #(number of episodes)
@@ -188,7 +170,6 @@ for i in range(num_repeats):
     world_state = agent_host.getWorldState()
     xpos, zpos = get_state_from_world(world_state)
     s = (xpos,zpos)
-    grid = get_grid_from_world(world_state)
 
     num_visited[s] += 1 #We have visited this state
 
@@ -196,7 +177,8 @@ for i in range(num_repeats):
     #epsilon = 1/number of times this state has been visited
     if s not in q_table:
         init_q_state(q_table, s)
-    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2), nn, grid, s)
+        init_q_state(e_table, s)
+    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2))
 
     while world_state.is_mission_running:
         sys.stdout.write(".")
@@ -213,7 +195,6 @@ for i in range(num_repeats):
             time.sleep(0.1)
             world_state = agent_host.getWorldState()
             newxpos, newzpos = get_state_from_world(world_state)
-            newgrid = get_state_from_world(world_state)
 
             #If something went wrong while trying to get the
             #world_state (i.e. mission ended and there's nothing
@@ -247,6 +228,7 @@ for i in range(num_repeats):
         #add it to the Q table and initialize it
         if snew not in q_table:
             init_q_state(q_table, snew)
+            init_q_state(e_table, snew)
         
         #calculate "Manhattan Distance" from start state
         dist = (abs(snew[0] - 0.5), abs(snew[1] - 0.5))
@@ -257,19 +239,16 @@ for i in range(num_repeats):
         #So if the agent dies further away from the goal, it gets less
         #negative reward
         r = r/(dist+1)
-        print(a)
-        nn.fit(make_nn_dat(grid, a), np.array([r]))
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/(number of times we visited the state)
-        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2), nn, grid, s)
-        update_q_table(q_table, s, a, r, snew, anew) #sarsa update to q table
+        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2))
         
+        update_q_table(q_table, e_table, s, a, r, snew, anew) #sarsa update to q table
         
         #Update current state/action to be taken
         s = snew
         a = anew
-        grid = newgrid
 
         #This usually means the agent died
         if breakloop:

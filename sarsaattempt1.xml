@@ -40,7 +40,7 @@
         <Block reward="1000000000.0" type="lapis_block" behaviour="onceOnly"/>
         <Block reward="-100.0" type="lava" behaviour="onceOnly"/>
       </RewardForTouchingBlockType>
-      <RewardForSendingCommand reward="-2"/>
+      <RewardForSendingCommand reward="-10"/>
       <AgentQuitFromTouchingBlockType>
           <Block type="lapis_block" />
           <Block type="lava" />
