@@ -9,8 +9,6 @@ import math
 
 import maze_gen2
 from collections import defaultdict
-import numpy as np
-from sklearn.neural_network import MLPRegressor
 
 DEFAULT_SIZE = 4
 
@@ -102,12 +100,6 @@ init_q_state(q_table, (0.5,0.5))
 #visited each state
 num_visited = defaultdict(int)
 
-nn = MLPRegressor(hidden_layer_sizes=(20,30), alpha=0.3)
-
-def make_nn_dat(grid, action):
-    print(action)
-    return np.array( grid + [hash(action)/float(10**18)] ).reshape(1, -1)
-
 #Given a list of action-value pairs, choose an action with an
 #epsilon-greedy policy
 def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
@@ -116,11 +108,7 @@ def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
         r = random.randint(0, 3)
         return actions[r][0]
     else:
-        if grid != None and nn != None and s != None:
-            return max(actions, key=lambda x: x[1])[0]
-        else:
-            return max( actions, key=lambda x: x[1] + 
-                nn.predict(make_nn_dat(grid, x[0])) )[0]
+        return max(actions, key=lambda x: x[1])[0]
             
 
 #Updating a Q table w/ the sarsa update
@@ -196,7 +184,7 @@ for i in range(num_repeats):
     #epsilon = 1/number of times this state has been visited
     if s not in q_table:
         init_q_state(q_table, s)
-    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2), nn, grid, s)
+    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2))
 
     while world_state.is_mission_running:
         sys.stdout.write(".")
@@ -257,12 +245,10 @@ for i in range(num_repeats):
         #So if the agent dies further away from the goal, it gets less
         #negative reward
         r = r/(dist+1)
-        print(a)
-        nn.fit(make_nn_dat(grid, a), np.array([r]))
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/(number of times we visited the state)
-        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2), nn, grid, s)
+        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2))
         update_q_table(q_table, s, a, r, snew, anew) #sarsa update to q table
         
         
