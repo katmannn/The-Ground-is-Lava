@@ -273,7 +273,7 @@ for i in range(num_repeats):
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/(number of times we visited the state)
-        anew = eps_greedy(q_table[snew].items(), 1/(num_visited[snew]+2))
+        anew = eps_greedy(q_table[snew].items(), 1.0/(num_visited[snew]+2))
         
         update_q_table(q_table, e_table, s, a, r, snew, anew) #sarsa update to q table
         
