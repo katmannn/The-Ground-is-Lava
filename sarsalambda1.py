@@ -261,7 +261,8 @@ for i in range(num_repeats):
             if len(action_list) > 1:
                 if action_list[-1] == opposite_action[action_list[-2]]:
                     r -= 1000
-                    print 'penalty'
+                    action_list = []
+                    #print 'penalty'
         else: #If we got no reward, something went wrong. Restart mission
             #time.sleep(0.1)
             episodes += 1
