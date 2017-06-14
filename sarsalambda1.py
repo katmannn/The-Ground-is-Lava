@@ -120,6 +120,8 @@ def update_q_table(q_table, e_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9, 
         for action in actions:
             q_table[state][action] = q_table[state][action] + alpha*delta*e_table[state][action]
             e_table[state][action] = gamma*l*e_table[state][action]
+    #print action
+    #print state
 
 #Get position of agent as a tuple
 def get_state_from_world(world_state):
@@ -133,6 +135,8 @@ def get_state_from_world(world_state):
 
 # Attempt to start a mission:
 num_repeats = 10000 #(number of episodes)
+found = False
+goal_count = 0
 for i in range(num_repeats):
     print
     print("Repeat %d of %d" % (i+1, num_repeats))
@@ -140,16 +144,19 @@ for i in range(num_repeats):
     my_mission_record = MalmoPython.MissionRecordSpec()
 
     #Attempt to start the mission
+    world_state = agent_host.getWorldState()
     max_retries = 20
     for retry in range(max_retries):
         try:
-            if i == 0:
-                agent_host.startMission( my_mission, my_mission_record )
-            else:
-                agent_host.startMission( my_mission2, my_mission_record2 )
-            break
+            if not world_state.is_mission_running:
+                if i == 0:
+                    agent_host.startMission( my_mission, my_mission_record )
+                else:
+                    agent_host.startMission( my_mission2, my_mission_record2 )
+                break
         except RuntimeError as e:
             print "Error starting mission:",e
+        time.sleep(0.1)
 
     # Loop until mission starts:
     print "Waiting for the mission to start ",
@@ -217,6 +224,12 @@ for i in range(num_repeats):
         r = 0
         if len(world_state.rewards) > 0:
             r += world_state.rewards[-1].getValue()
+            if r > 0:
+                if not found:
+                    goal_count = 1
+                else:
+                    goal_count += 1
+                found = True
         else: #If we got no reward, something went wrong. Restart mission
             break
 
@@ -259,4 +272,7 @@ for i in range(num_repeats):
     time.sleep(0.5)
     print
     print "Mission ended"
+    if goal_count >= 3:
+        print 'Goal found in ' + str(i) + ' episodes.'
+        break
 # Mission has ended.
