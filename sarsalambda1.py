@@ -137,9 +137,10 @@ def get_state_from_world(world_state):
 num_repeats = 10000 #(number of episodes)
 found = False
 goal_count = 0
+episodes = 1
 for i in range(num_repeats):
     print
-    print("Repeat %d of %d" % (i+1, num_repeats))
+    print("Repeat %d of %d" % (episodes+1, num_repeats))
 
     my_mission_record = MalmoPython.MissionRecordSpec()
 
@@ -156,7 +157,7 @@ for i in range(num_repeats):
             break
         except RuntimeError as e:
             print "Error starting mission:",e
-        time.sleep(0.1)
+        #time.sleep(0.1)
 
     # Loop until mission starts:
     print "Waiting for the mission to start ",
@@ -209,6 +210,7 @@ for i in range(num_repeats):
             #iteration.
             if newxpos == None or newzpos == None:
                 breakloop = True
+                episodes -= 1
                 break
 
             #Checking to see if the world_state represents the
@@ -266,6 +268,7 @@ for i in range(num_repeats):
         #This usually means the agent died
         if breakloop:
             time.sleep(0.1)
+            episodes += 1
             break
 
 
