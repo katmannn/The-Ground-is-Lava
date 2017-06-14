@@ -20,7 +20,7 @@
   </ServerSection>
   
   <AgentSection mode="Survival">
-    <Name>MalmoTutorialBot</Name>
+    <Name>Maze Runner</Name>
     <AgentStart>
         <Placement x="0.5" y="5.0" z="0.5" yaw="-90"/>
         <Inventory>
