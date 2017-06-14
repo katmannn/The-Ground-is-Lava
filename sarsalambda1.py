@@ -214,8 +214,12 @@ for i in range(num_repeats):
             #to get), we will restart the mission following this
             #iteration.
             if newxpos == None or newzpos == None:
-                breakloop = True
-                break
+                time.sleep(0.1)
+                #world_state = agent_host.getWorldState()
+                newxpos, newzpos = get_state_from_world(world_state)
+                if newxpos == None or newzpos == None:
+                    breakloop = True
+                    break
 
             #Checking to see if the world_state represents the
             #"new state" (i.e. we actually changed position. The
@@ -228,15 +232,22 @@ for i in range(num_repeats):
 
         #Get reward for this state
         r = 0
-        if len(world_state.rewards) > 0:
-            r += world_state.rewards[-1].getValue()
-            if r > 0:
-                if not found:
-                    goal_count = 1
-                else:
-                    goal_count += 1
-                found = True
-        else: #If we got no reward, something went wrong. Restart mission
+        rewarded = True
+        for tries in range(3):
+            if len(world_state.rewards) > 0:
+                r += world_state.rewards[-1].getValue()
+                if r > 0:
+                    if not found:
+                        goal_count = 1
+                    else:
+                        goal_count += 1
+                    found = True
+                rewarded = True
+                break
+            else: #If we got no reward, something went wrong. Restart mission
+                rewarded = False
+                time.sleep(0.1)
+        if not rewarded:
             episodes += 1
             break
 
@@ -281,6 +292,6 @@ for i in range(num_repeats):
     print
     print "Mission ended"
     if goal_count >= 3:
-        print 'Goal found in ' + str(episodes) + ' episodes.'
+        print 'Goal found in ' + str(episodes - 1) + ' episodes.'
         break
 # Mission has ended.
