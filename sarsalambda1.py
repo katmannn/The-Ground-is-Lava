@@ -89,7 +89,7 @@ actions = ["movenorth 1", "movesouth 1", "movewest 1", "moveeast 1"]
 #to all be equal to 0 initially)
 def init_q_state(q_table, state, actions=actions):
     for a in actions:
-        q_table[state][a] = 0
+        q_table[state][a] = 0.0
 
 #Create a Q table and initialize the start state
 q_table = defaultdict(dict)
@@ -109,7 +109,7 @@ def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
         r = random.randint(0, 3)
         return actions[r][0]
     else:
-         return max(actions, key=lambda x: x[1])[0]
+        return max(actions, key=lambda x: x[1])[0]
 
 #Updating a Q table w/ the sarsa update
 def update_q_table(q_table, e_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9, l=0.5):
@@ -138,6 +138,8 @@ num_repeats = 10000 #(number of episodes)
 found = False
 goal_count = 0
 episodes = 1
+opposite_action = {"movenorth 1" : "movesouth 1", "movesouth 1" : "movenorth 1", 
+                   "movewest 1" : "moveeast 1", "moveeast 1" : "movewest 1"}
 for i in range(num_repeats):
     print
     print("Repeat %d of %d" % (episodes, num_repeats))
@@ -191,19 +193,25 @@ for i in range(num_repeats):
     if s not in q_table:
         init_q_state(q_table, s)
         init_q_state(e_table, s)
-    a = eps_greedy(q_table[s].items(), 1/(num_visited[s]+2))
+
+    a = eps_greedy(q_table[s].items(), 1.0/(num_visited[s]+2))
+    
+    breakloop = False
 
     while world_state.is_mission_running:
+        action_list = []
         sys.stdout.write(".")
         
-        time.sleep(0.1)
+        #time.sleep(0.1)
         for error in world_state.errors:
             print "Error:",error.text
 
         #Take an action
+        #print 'send command'
         agent_host.sendCommand(a)
+        action_list.append(a)
         
-        breakloop = False
+        
         while True:
             time.sleep(0.1)
             world_state = agent_host.getWorldState()
@@ -214,7 +222,8 @@ for i in range(num_repeats):
             #to get), we will restart the mission following this
             #iteration.
             if newxpos == None or newzpos == None:
-                time.sleep(0.1)
+                #time.sleep(0.1)
+                #world_state = agent_host.getWorldState()
                 breakloop = True
                 break
 
@@ -229,16 +238,22 @@ for i in range(num_repeats):
 
         #Get reward for this state
         r = 0
+        #world_state = agent_host.getWorldState()
         if world_state.number_of_rewards_since_last_state > 0:
             r += world_state.rewards[0].getValue()
+                #print [x.getValue() for x in world_state.rewards]
             if r > 0:
                 if not found:
                     goal_count = 1
                 else:
                     goal_count += 1
                 found = True
+            #penalty for backtracking
+            if len(action_list) > 1:
+                if action_list[-1] == opposite_action[action_list[-2]]:
+                    r -= 1000
         else: #If we got no reward, something went wrong. Restart mission
-            time.sleep(0.1)
+            #time.sleep(0.1)
             episodes += 1
             break
 
@@ -264,6 +279,7 @@ for i in range(num_repeats):
         
         #choose new action according to epsilon greedy policy with
         #epsilon = 1/(number of times we visited the state)
+        #a_star = max(q_table[s].items(), key=lambda x: x[1])[0]
         anew = eps_greedy(q_table[snew].items(), 1.0/(num_visited[snew]+2))
         
         update_q_table(q_table, e_table, s, a, r, snew, anew) #sarsa update to q table
@@ -274,14 +290,16 @@ for i in range(num_repeats):
 
         #This usually means the agent died
         if breakloop:
-            time.sleep(0.1)
+            #time.sleep(0.1)
+            #print 'breakloop'
             episodes += 1
             break
 
 
-    time.sleep(0.5)
     print
     print "Mission ended"
+    time.sleep(0.5)
+
     if goal_count >= 3:
         print 'Goal found in ' + str(episodes - 1) + ' episodes.'
         break
