@@ -118,8 +118,8 @@ def update_q_table(q_table, e_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9, 
     e_table[s][a] = e_table[s][a] + 1
     for state in q_table:
         for action in actions:
-            q_table[s][a] = q_table[s][a] + alpha*delta*e_table[s][a]
-            e_table[s][a] = gamma*l*e_table[s][a]
+            q_table[state][action] = q_table[state][action] + alpha*delta*e_table[state][action]
+            e_table[state][action] = gamma*l*e_table[state][action]
 
 #Get position of agent as a tuple
 def get_state_from_world(world_state):
