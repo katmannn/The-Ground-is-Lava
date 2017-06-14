@@ -27,7 +27,7 @@ if agent_host.receivedArgument("help"):
     exit(0)
 
 #loading mission file
-mission_file = "C:\Users\Jeffrey\Desktop\CS175\Malmo-0.21.0-Windows-64bit\Python_Examples\sarsaattempt1.xml"
+mission_file = "sarsaattempt1.xml"
 with open(mission_file, 'r') as f:
     print "Loading mission from %s" % mission_file
     missionXML = f.read()
@@ -146,7 +146,8 @@ for i in range(num_repeats):
 
     #Attempt to start the mission
     #world_state = agent_host.getWorldState()
-    max_retries = 20
+    max_retries = 10
+    mission_err = False
     for retry in range(max_retries):
         try:
             #if not world_state.is_mission_running:
@@ -157,6 +158,9 @@ for i in range(num_repeats):
             break
         except RuntimeError as e:
             print "Error starting mission:",e
+            mission_err = True
+    if mission_err:
+        episodes -= 1
         #time.sleep(0.1)
 
     # Loop until mission starts:
@@ -210,7 +214,6 @@ for i in range(num_repeats):
             #iteration.
             if newxpos == None or newzpos == None:
                 breakloop = True
-                episodes -= 1
                 break
 
             #Checking to see if the world_state represents the
@@ -276,6 +279,6 @@ for i in range(num_repeats):
     print
     print "Mission ended"
     if goal_count >= 3:
-        print 'Goal found in ' + str(i + 1) + ' episodes.'
+        print 'Goal found in ' + str(episdoes + 1) + ' episodes.'
         break
 # Mission has ended.
