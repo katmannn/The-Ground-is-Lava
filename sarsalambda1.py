@@ -146,7 +146,7 @@ for i in range(num_repeats):
 
     #Attempt to start the mission
     #world_state = agent_host.getWorldState()
-    max_retries = 10
+    max_retries = 5
     mission_err = False
     for retry in range(max_retries):
         try:
@@ -215,11 +215,8 @@ for i in range(num_repeats):
             #iteration.
             if newxpos == None or newzpos == None:
                 time.sleep(0.1)
-                #world_state = agent_host.getWorldState()
-                newxpos, newzpos = get_state_from_world(world_state)
-                if newxpos == None or newzpos == None:
-                    breakloop = True
-                    break
+                breakloop = True
+                break
 
             #Checking to see if the world_state represents the
             #"new state" (i.e. we actually changed position. The
@@ -232,22 +229,16 @@ for i in range(num_repeats):
 
         #Get reward for this state
         r = 0
-        rewarded = True
-        for tries in range(3):
-            if len(world_state.rewards) > 0:
-                r += world_state.rewards[-1].getValue()
-                if r > 0:
-                    if not found:
-                        goal_count = 1
-                    else:
-                        goal_count += 1
-                    found = True
-                rewarded = True
-                break
-            else: #If we got no reward, something went wrong. Restart mission
-                rewarded = False
-                time.sleep(0.1)
-        if not rewarded:
+        if world_state.number_of_rewards_since_last_state > 0:
+            r += world_state.rewards[0].getValue()
+            if r > 0:
+                if not found:
+                    goal_count = 1
+                else:
+                    goal_count += 1
+                found = True
+        else: #If we got no reward, something went wrong. Restart mission
+            time.sleep(0.1)
             episodes += 1
             break
 
