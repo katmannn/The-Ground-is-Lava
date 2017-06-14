@@ -257,7 +257,7 @@ for i in range(num_repeats):
                     goal_count += 1
                 found = True
             #penalty for backtracking
-            print action_list
+            #print action_list
             if len(action_list) > 1:
                 if action_list[-1] == opposite_action[action_list[-2]]:
                     r -= 1000
