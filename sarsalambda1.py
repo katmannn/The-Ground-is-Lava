@@ -260,9 +260,12 @@ for i in range(num_repeats):
             #print action_list
             if len(action_list) > 1:
                 if action_list[-1] == opposite_action[action_list[-2]]:
-                    r -= 1000
+                    #a_star = max(q_table[s].items(), key=lambda x: x[1])[1]
+                    #if a_star == q_table[s][a][1]:
+                    r -= 100
                     action_list = []
                     #print 'penalty'
+
         else: #If we got no reward, something went wrong. Restart mission
             #time.sleep(0.1)
             episodes += 1
