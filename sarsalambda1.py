@@ -58,13 +58,13 @@ def make_edge(edge):
     
     for ed in [start, mid, end]:
         my_mission.drawBlock(ed[0], 1, ed[1], "stone")
-        my_mission.drawBlock(ed[0], 2, ed[1], "stone")
-        my_mission.drawBlock(ed[0], 3, ed[1], "stone")
+        #my_mission.drawBlock(ed[0], 2, ed[1], "stone")
+        #my_mission.drawBlock(ed[0], 3, ed[1], "stone")
 for i in e:
     make_edge(i)
 
 final_coords = ( (size[0]-1)*2, (size[1]-1)*2 )
-my_mission.drawBlock(final_coords[0], 3, final_coords[1], "lapis_block")
+my_mission.drawBlock(final_coords[0], 1, final_coords[1], "lapis_block")
 ###############
 ###############
 
@@ -109,8 +109,17 @@ def eps_greedy(actions, epsilon=0.1, grid = None, nn = None, s = None):
         r = random.randint(0, 3)
         return actions[r][0]
     else:
-        return max(actions, key=lambda x: x[1])[0]
-
+        cur_max = actions[0]
+        ties = [cur_max]
+        #find max, if you have ties, pick one at random
+        for action in actions[1:]:
+            if action[1] > cur_max[1]:
+                cur_max = action
+                ties = [cur_max]
+            elif action[1] == cur_max[1]:
+                ties.append(action)
+        r = random.randint(0, len(ties) - 1)
+        return ties[r][0]
 #Updating a Q table w/ the sarsa update
 def update_q_table(q_table, e_table, s, a, r, snew, anew, alpha=0.8, gamma=0.9, l=0.5):
 
@@ -197,9 +206,8 @@ for i in range(num_repeats):
     a = eps_greedy(q_table[s].items(), 1.0/(num_visited[s]+2))
     
     breakloop = False
-
+    action_list = []
     while world_state.is_mission_running:
-        action_list = []
         sys.stdout.write(".")
         
         #time.sleep(0.1)
@@ -249,9 +257,11 @@ for i in range(num_repeats):
                     goal_count += 1
                 found = True
             #penalty for backtracking
+            print action_list
             if len(action_list) > 1:
                 if action_list[-1] == opposite_action[action_list[-2]]:
                     r -= 1000
+                    print 'penalty'
         else: #If we got no reward, something went wrong. Restart mission
             #time.sleep(0.1)
             episodes += 1
