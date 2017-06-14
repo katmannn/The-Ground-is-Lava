@@ -281,6 +281,6 @@ for i in range(num_repeats):
     print
     print "Mission ended"
     if goal_count >= 3:
-        print 'Goal found in ' + str(episdoes) + ' episodes.'
+        print 'Goal found in ' + str(episodes) + ' episodes.'
         break
 # Mission has ended.
