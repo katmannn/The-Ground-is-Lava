@@ -140,7 +140,7 @@ goal_count = 0
 episodes = 1
 for i in range(num_repeats):
     print
-    print("Repeat %d of %d" % (episodes+1, num_repeats))
+    print("Repeat %d of %d" % (episodes, num_repeats))
 
     my_mission_record = MalmoPython.MissionRecordSpec()
 
@@ -155,6 +155,7 @@ for i in range(num_repeats):
                 agent_host.startMission( my_mission, my_mission_record )
             else:
                 agent_host.startMission( my_mission2, my_mission_record2 )
+            mission_err = False
             break
         except RuntimeError as e:
             print "Error starting mission:",e
@@ -279,6 +280,6 @@ for i in range(num_repeats):
     print
     print "Mission ended"
     if goal_count >= 3:
-        print 'Goal found in ' + str(episdoes + 1) + ' episodes.'
+        print 'Goal found in ' + str(episdoes) + ' episodes.'
         break
 # Mission has ended.
