@@ -237,6 +237,7 @@ for i in range(num_repeats):
                     goal_count += 1
                 found = True
         else: #If we got no reward, something went wrong. Restart mission
+            episodes += 1
             break
 
         #If everything went well, get the new state
