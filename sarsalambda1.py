@@ -27,7 +27,7 @@ if agent_host.receivedArgument("help"):
     exit(0)
 
 #loading mission file
-mission_file = "sarsaattempt1.xml"
+mission_file = "C:\Users\Jeffrey\Desktop\CS175\Malmo-0.21.0-Windows-64bit\Python_Examples\sarsaattempt1.xml"
 with open(mission_file, 'r') as f:
     print "Loading mission from %s" % mission_file
     missionXML = f.read()
@@ -144,16 +144,16 @@ for i in range(num_repeats):
     my_mission_record = MalmoPython.MissionRecordSpec()
 
     #Attempt to start the mission
-    world_state = agent_host.getWorldState()
+    #world_state = agent_host.getWorldState()
     max_retries = 20
     for retry in range(max_retries):
         try:
-            if not world_state.is_mission_running:
-                if i == 0:
-                    agent_host.startMission( my_mission, my_mission_record )
-                else:
-                    agent_host.startMission( my_mission2, my_mission_record2 )
-                break
+            #if not world_state.is_mission_running:
+            if i == 0:
+                agent_host.startMission( my_mission, my_mission_record )
+            else:
+                agent_host.startMission( my_mission2, my_mission_record2 )
+            break
         except RuntimeError as e:
             print "Error starting mission:",e
         time.sleep(0.1)
@@ -189,8 +189,8 @@ for i in range(num_repeats):
 
     while world_state.is_mission_running:
         sys.stdout.write(".")
-        time.sleep(0.1)
         
+        time.sleep(0.1)
         for error in world_state.errors:
             print "Error:",error.text
 
@@ -273,6 +273,6 @@ for i in range(num_repeats):
     print
     print "Mission ended"
     if goal_count >= 3:
-        print 'Goal found in ' + str(i) + ' episodes.'
+        print 'Goal found in ' + str(i + 1) + ' episodes.'
         break
 # Mission has ended.
