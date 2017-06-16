@@ -39,9 +39,15 @@ In contrast to our evaluation from the status report, we have gathered additiona
 
 The following graph says it all:
 
+Above rewritten(In order to further analyze and interpret the results that we had obtained from running our Sarsa algorithm, we gathered data on our Sarsa(lambda) algorithm and compared their statistics. 
+Our primary evaluation measure was examining the performance of each agent. We defined “convergence” as reaching the goal state 3 times in a row and recorded the number of episodes the agent takes to converge. We tested this with numerous iterations on both algorithms and took the average number of episodes that a given agent and environment took to converge. We also varied the environment size, all of which is displayed in the following graph:)
+
 (LOL WE STILL NEED MORE DATA SO NO GRAPH YET BUT IT'S ALREADY PRETTY OBVIOUS THAT SARSA(LAMBDA) IS BETTER)
 
 Sarsa(lambda) appears to drastically outperform plain Sarsa on our MDP. The intuitive reasoning for this, we believe, is simply that eligibility traces allow the reward for a given state to propogate backwards. Consider the following toy example:
+
+Above rewritten (Sarsa(lambda) appears to drastically outperform plain Sarsa on our Markov Decision Process. Our intuition leads us to believe that the reasoning for this outcome is that eligibility traces allow the reward for a given state to propagate backwards. Let us examine a simple example that demonstrates the property of backtracking to previous states if a path results in a poor reward. 
+Consider the environment pictured below, where the red box is lava and the white boxes signify the dirt blocks of the maze. Recall that our agent starts in the state (0,0) and has the objective to end in the goal block (marked in green).)
 
 <img src="ex1.png">
 
